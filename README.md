@@ -24,7 +24,7 @@ sudo apt update && sudo apt install git -y
 ```bash
 git clone https://github.com/maso0310/flask_vps_deploy.git && \
 cd flask_vps_deploy && \
-chmod +x setup_flask_vps.sh && \
+chmod +x setup_flask_vps.sh chmod +x uninstall.sh && \
 sudo ./Flask-vps-deploy.sh myapp yourdomain.com
 ```
 
