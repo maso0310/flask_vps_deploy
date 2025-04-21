@@ -25,7 +25,12 @@ sudo apt update && sudo apt install git -y
 git clone https://github.com/maso0310/flask_vps_deploy.git && \
 cd flask_vps_deploy && \
 chmod +x Flask-vps-deploy.sh && \
+
+# 有網域名稱指令
 sudo ./Flask-vps-deploy.sh myapp yourdomain.com
+
+# 無網域名稱指令
+sudo ./Flask-vps-deploy.sh myapp _
 ```
 
 - `myapp`：你要建立的 Flask 專案名稱
