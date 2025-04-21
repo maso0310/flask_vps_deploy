@@ -1,24 +1,25 @@
 #!/bin/bash
 
-# ========== 參數處理 ==========
+# ========= 權限與參數檢查 =========
 if [[ $EUID -ne 0 ]]; then
-   echo "請用 sudo 權限執行：sudo bash setup_flask_vps.sh 專案名稱"
+   echo "請用 sudo 權限執行：sudo bash setup_flask_vps.sh 專案名稱 [網域名稱]"
    exit 1
 fi
 
 PROJECT_NAME=${1:-myflaskapp}
+DOMAIN_NAME=${2:-_}
 SERVICE_NAME=$PROJECT_NAME
 INSTALL_DIR="/opt/$PROJECT_NAME"
 SOCK_PATH="$INSTALL_DIR/$PROJECT_NAME.sock"
-NGINX_SITE="/etc/nginx/sites-available/flask_projects"
+NGINX_SITE="/etc/nginx/sites-available/flask_projects_${DOMAIN_NAME//./_}"
 
-echo "🚀 開始部署 Flask 專案 [$PROJECT_NAME] 到 VPS..."
+echo "🚀 開始部署 Flask 專案 [$PROJECT_NAME] 到 VPS（網域：$DOMAIN_NAME）..."
 
-# ========== 安裝必要套件 ==========
+# ========= 安裝必要套件 =========
 apt update
 apt install python3 python3-pip python3-venv nginx lsof -y
 
-# ========== 建立專案資料夾與虛擬環境 ==========
+# ========= 建立虛擬環境與 Flask 專案 =========
 mkdir -p "$INSTALL_DIR"
 cd "$INSTALL_DIR"
 
@@ -26,7 +27,7 @@ python3 -m venv venv
 source venv/bin/activate
 pip install flask gunicorn
 
-# ========== 建立 Flask 程式 ==========
+# ========= 建立 app.py =========
 cat > app.py << EOF
 from flask import Flask
 app = Flask(__name__)
@@ -36,7 +37,7 @@ def home():
     return "Hello from Gunicorn + Flask on VPS at /$PROJECT_NAME/"
 EOF
 
-# ========== 建立 systemd 服務 ==========
+# ========= 建立 systemd 服務 =========
 cat > /etc/systemd/system/$SERVICE_NAME.service << EOF
 [Unit]
 Description=Gunicorn instance to serve Flask app [$PROJECT_NAME]
@@ -53,7 +54,7 @@ ExecStart=$INSTALL_DIR/venv/bin/gunicorn --workers 3 --bind unix:$SOCK_PATH app:
 WantedBy=multi-user.target
 EOF
 
-# 啟動 Gunicorn 並設定 .sock 權限
+# ========= 啟動 Gunicorn 並設定 socket 權限 =========
 systemctl daemon-reexec
 systemctl start $SERVICE_NAME
 sleep 1
@@ -63,45 +64,47 @@ if [ -S "$SOCK_PATH" ]; then
     chmod 766 "$SOCK_PATH"
     echo "✅ .sock 權限已設定完成"
 else
-    echo "❌ 錯誤：Gunicorn 未正確啟動，請使用 'journalctl -u $SERVICE_NAME' 檢查錯誤"
+    echo "❌ Gunicorn 未正確啟動，請檢查 journalctl -u $SERVICE_NAME"
     exit 1
 fi
 
-# ========== 建立/更新統一 Nginx 設定檔 ==========
-echo "🌐 設定 nginx location /$PROJECT_NAME/ ..."
+# ========= 設定 Nginx =========
+echo "🌐 設定 Nginx location /$PROJECT_NAME/ for $DOMAIN_NAME"
 
-# 移除預設 default 頁面（只做一次）
+# 移除 default 頁面（僅第一次有效）
 rm -f /etc/nginx/sites-enabled/default 2>/dev/null || true
 
-# 如果設定檔不存在，建立 server block 結構
+# 若該 domain 的 nginx 設定不存在，先建立基本框架
 if [ ! -f "$NGINX_SITE" ]; then
     cat > "$NGINX_SITE" << EOF
 server {
     listen 80;
-    server_name _;
+    server_name $DOMAIN_NAME;
 
-    # 各專案 location 將會插入此區塊
+    # ↓ location 區段將在這裡插入 ↓
 }
 EOF
 fi
 
-# 檢查是否已存在該專案的 location
+# 若該 location 尚未存在，插入
 if ! grep -q "location /$PROJECT_NAME/" "$NGINX_SITE"; then
-    sed -i "/# 各專案 location 將會插入此區塊/a \\
+    sed -i "/# ↓ location 區段將在這裡插入 ↓/a \\
     location /$PROJECT_NAME/ {\n\
         include proxy_params;\n\
         proxy_pass http://unix:$SOCK_PATH;\n\
     }" "$NGINX_SITE"
-    echo "✅ location /$PROJECT_NAME/ 已新增至 Nginx"
+    echo "✅ 已新增 /$PROJECT_NAME/ 到 $NGINX_SITE"
 else
-    echo "⚠️ Nginx 中已存在 location /$PROJECT_NAME/，略過"
+    echo "⚠️ 已存在 /$PROJECT_NAME/，略過新增"
 fi
 
-ln -sf "$NGINX_SITE" /etc/nginx/sites-enabled/flask_projects
+# 啟用此站台（可重複）
+ln -sf "$NGINX_SITE" "/etc/nginx/sites-enabled/$(basename $NGINX_SITE)"
+
+# 重啟 nginx
 nginx -t && systemctl restart nginx
 
-# ========== 結尾提示 ==========
+# ========= 結尾 =========
 echo ""
 echo "✅ 專案 [$PROJECT_NAME] 部署完成！"
-echo "👉 請開啟：http://your-vps-ip/$PROJECT_NAME/"
-echo "✨ 預期畫面：Hello from Gunicorn + Flask on VPS at /$PROJECT_NAME/"
+echo "👉 請訪問：http://$DOMAIN_NAME/$PROJECT_NAME/"
