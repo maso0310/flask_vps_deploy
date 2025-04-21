@@ -36,9 +36,12 @@ sudo ./setup_flask_vps.sh myapp2 _
 
 
 ### 建立一個有網域的專案
+```bash
 sudo ./setup_flask_vps.sh myapp3 mydomain.com
+```
 
 ### 你也可以重複在同一個網域下新增更多子路徑專案
+```bash
 sudo ./setup_flask_vps.sh myapp4 mydomain.com
 ```
 
