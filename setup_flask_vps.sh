@@ -6,22 +6,21 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
+# === 可修改變數 ===
 PROJECT_NAME="myflaskapp"
-SERVICE_NAME="myflask"
-SOCK_PATH="/root/$PROJECT_NAME/$PROJECT_NAME.sock"
-WORK_DIR="/root/$PROJECT_NAME"
+SERVICE_NAME=$PROJECT_NAME
+INSTALL_DIR="/opt/$PROJECT_NAME"
+SOCK_PATH="$INSTALL_DIR/$PROJECT_NAME.sock"
 
 echo "🚀 開始部署 Flask 專案到 VPS..."
 
-# 更新套件列表
+# 安裝必要套件
 apt update
-
-# 安裝 Python3 與 pip
 apt install python3 python3-pip python3-venv nginx lsof -y
 
 # 建立 Flask 專案資料夾
-mkdir -p $WORK_DIR
-cd $WORK_DIR
+mkdir -p $INSTALL_DIR
+cd $INSTALL_DIR
 
 # 建立虛擬環境
 python3 -m venv venv
@@ -49,18 +48,23 @@ After=network.target
 [Service]
 User=root
 Group=www-data
-WorkingDirectory=$WORK_DIR
-Environment="PATH=$WORK_DIR/venv/bin"
-ExecStart=$WORK_DIR/venv/bin/gunicorn --workers 3 --bind unix:$SOCK_PATH app:app
+WorkingDirectory=$INSTALL_DIR
+Environment="PATH=$INSTALL_DIR/venv/bin"
+ExecStart=$INSTALL_DIR/venv/bin/gunicorn --workers 3 --bind unix:$SOCK_PATH app:app
+ExecStartPost=/bin/chown root:www-data $SOCK_PATH
+ExecStartPost=/bin/chmod 766 $SOCK_PATH
 
 [Install]
 WantedBy=multi-user.target
 EOF
 
-# 啟用並啟動服務
+# 啟動 systemd 服務
 systemctl daemon-reexec
 systemctl start $SERVICE_NAME
 systemctl enable $SERVICE_NAME
+
+# 移除 nginx 預設首頁（避免干擾）
+rm -f /etc/nginx/sites-enabled/default
 
 # 建立 nginx 設定檔
 cat > /etc/nginx/sites-available/$PROJECT_NAME << EOF
@@ -76,7 +80,9 @@ server {
 EOF
 
 # 啟用 nginx 設定
-ln -s /etc/nginx/sites-available/$PROJECT_NAME /etc/nginx/sites-enabled/
+ln -sf /etc/nginx/sites-available/$PROJECT_NAME /etc/nginx/sites-enabled/
 nginx -t && systemctl restart nginx
 
-echo "✅ 部署完成！請在瀏覽器輸入你的 VPS IP 檢查成果：應該會顯示 Hello from Gunicorn + Flask on VPS!"
+echo ""
+echo "✅ 部署完成！請在瀏覽器輸入你的 VPS IP 查看成果："
+echo "👉 預期畫面應顯示：Hello from Gunicorn + Flask on VPS!"
