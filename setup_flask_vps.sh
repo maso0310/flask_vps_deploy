@@ -17,7 +17,7 @@ echo "🚀 開始部署 Flask 專案到 VPS..."
 apt update
 
 # 安裝 Python3 與 pip
-apt install python3 python3-pip python3-venv nginx -y
+apt install python3 python3-pip python3-venv nginx lsof -y
 
 # 建立 Flask 專案資料夾
 mkdir -p $WORK_DIR
