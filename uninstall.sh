@@ -26,6 +26,30 @@ fi
 # 移除 nginx 設定
 rm -f $NGINX_SITE
 rm -f $NGINX_LINK
+
+# 還原 nginx 預設 default 設定檔（若不存在）
+if [ ! -f /etc/nginx/sites-available/default ]; then
+    echo "🌱 還原 nginx 預設 default 設定檔..."
+    cat > /etc/nginx/sites-available/default << 'EOF'
+server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
+
+    server_name _;
+
+    root /var/www/html;
+
+    index index.html index.htm index.nginx-debian.html;
+
+    location / {
+        try_files $uri $uri/ =404;
+    }
+}
+EOF
+    ln -sf /etc/nginx/sites-available/default /etc/nginx/sites-enabled/
+    echo "✅ nginx 預設 default 設定檔已還原"
+fi
+
 systemctl restart nginx
 echo "✅ nginx 設定已清除並重啟"
 
