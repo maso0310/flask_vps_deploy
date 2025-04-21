@@ -20,20 +20,11 @@
 sudo apt update && sudo apt install git -y
 ```
 
-### 2️⃣ 下載專案並執行部署腳本
+### 2️⃣ 克隆專案並執行部署腳本
 ```bash
 git clone https://github.com/maso0310/flask_vps_deploy.git && \
 cd flask_vps_deploy && \
-chmod +x Flask-vps-deploy.sh
-```
-
-### 無網域名稱專案建立指令
-```
-sudo ./Flask-vps-deploy.sh myapp _
-```
-
-### 有網域名稱專案建立指令
-```
+chmod +x Flask-vps-deploy.sh && \
 sudo ./Flask-vps-deploy.sh myapp yourdomain.com
 ```
 
@@ -62,6 +53,23 @@ Hello from Gunicorn + Flask on VPS!
 
 ---
 
+## 🧹 如何還原安裝內容（uninstall.sh）
+
+若你想清除這次部署的內容，可以使用我們提供的 `uninstall.sh`：
+
+```bash
+sudo ./uninstall.sh myapp
+```
+
+這會執行以下操作：
+- 停止並移除 systemd 服務
+- 刪除 nginx 設定檔與啟用連結
+- 刪除 `/root/myapp` 專案資料夾
+
+**注意：這不會移除你安裝的 Python/nginx 套件。**
+
+---
+
 ## 🛠 常見錯誤排解
 
 ### ❌ `nginx: [emerg] bind() to 0.0.0.0:80 failed`：
@@ -70,6 +78,13 @@ Hello from Gunicorn + Flask on VPS!
 sudo lsof -i :80
 sudo systemctl stop apache2
 ```
+
+---
+
+## 📝 範例截圖（可自行加入）
+你可以在此放上幾張畫面截圖：
+- `部署後 nginx 顯示成功頁面`
+- `systemctl status myapp` 顯示 active (running)
 
 ---
 
