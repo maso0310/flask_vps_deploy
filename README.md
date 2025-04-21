@@ -83,8 +83,13 @@ sudo ./uninstall.sh myapp3 mydomain.com
 ---
 
 ## 🙋‍♂️ 聯絡我
+====================================<br>
+如果喜歡這個教學內容<br>
+歡迎訂閱Youtube頻道<br>
+[Maso的萬事屋](https://www.youtube.com/playlist?list=PLG4d6NSc7_l5-GjYiCdYa7H5Wsz0oQA7U)<br>
+或加我私下討論 LINE ID: mastermaso<br>
+![LOGO](https://yt3.ggpht.com/ytc/AKedOLR7I7tw_IxwJRgso1sT4paNu2s6_4hMw2goyDdrYQ=s88-c-k-c0x00ffffff-no-rj)<br>
 
-![你的大頭貼](https://avatars.githubusercontent.com/u/36530475?s=400&u=ef2c1ec317260e01c3ce687780be8b511dd7c35d&v=4)
-如果你喜歡這套教學內容，歡迎訂閱我的 YouTube 頻道：[Maso 的萬事屋](https://www.youtube.com/channel/UCpzVAEwEs9AwT2uAOZuxaRQ)
-或加我私訊討論 LINE ID：`mastermaso`
+
+====================================<br>
 
