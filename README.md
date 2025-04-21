@@ -1,53 +1,77 @@
 # flask_vps_deploy
-一鍵部署 Flask + Gunicorn + systemd + nginx 的 VPS 架站腳本，適用於 Ubuntu 系統的 Python 網頁應用伺服器
 
-## ✅ 在 VPS 上執行這個腳本的完整流程：
-
-```bash
-# 1. 進入主目錄（或你想放的位置）
-cd ~
-
-# 2. 下載專案
-git clone https://github.com/maso0310/flask_vps_deploy.git
-
-# 3. 進入資料夾
-cd flask_vps_deploy
-
-# 4. 給予執行權限（只需一次）
-chmod +x Flask-vps-deploy.sh
-
-# 5. 執行腳本（參數說明如下）
-sudo ./Flask-vps-deploy.sh myproject mydomain.com
-```
+一鍵部署 Flask + Gunicorn + systemd + nginx 的 VPS 架站腳本，適用於 Ubuntu 系統的 Python 網頁應用伺服器。
 
 ---
 
-## 🔧 腳本參數說明
-
-| 參數               | 說明 |
-|--------------------|------|
-| `myproject`        | 專案名稱，例如 `chatbot_api`，系統會建立 `/root/chatbot_api` 等相關資料夾與設定 |
-| `mydomain.com`     | 網域名稱，若沒有可填 `_`，會自動套用 nginx 通配設定 |
+## 🚀 功能簡介
+- 適用於 Ubuntu VPS 的 Python Web App 一鍵部署
+- 自動建立 Flask 專案、虛擬環境與必要套件
+- 使用 Gunicorn 作為 WSGI server
+- 使用 systemd 管理開機自動啟動服務
+- 整合 nginx 做反向代理並處理 .sock 溝通
 
 ---
 
-## 📝 範例：沒綁定網域的基本 VPS 測試
+## 📦 快速開始
 
+### 1️⃣ SSH 登入你的 VPS 後，輸入：
 ```bash
-sudo ./Flask-vps-deploy.sh testapp _
+sudo apt update && sudo apt install git -y
 ```
 
-部署完成後，開瀏覽器輸入你的 VPS IP，即可看到：
+### 2️⃣ 克隆專案並執行部署腳本
+```bash
+git clone https://github.com/maso0310/flask_vps_deploy.git && \
+cd flask_vps_deploy && \
+chmod +x Flask-vps-deploy.sh && \
+sudo ./Flask-vps-deploy.sh myapp yourdomain.com
+```
+
+- `myapp`：你要建立的 Flask 專案名稱
+- `yourdomain.com`：你的網域名稱（如果沒有請輸入 `_` 代表預設通配）
+
+### ✅ 成功後打開瀏覽器：
+- 若無網域：`http://你的VPS IP`
+- 若有網域：`http://yourdomain.com`
+
+將會看到畫面顯示：
 ```
 Hello from Gunicorn + Flask on VPS!
 ```
 
 ---
 
+## 🔍 腳本做了哪些事
+
+| 類別   | 操作內容 |
+|--------|-----------|
+| Linux  | 安裝 Python3 / pip / nginx，建立虛擬環境 |
+| Flask  | 建立 app.py，安裝 flask 與 gunicorn |
+| systemd | 建立並啟用服務單元檔，使專案開機自動啟動 |
+| nginx  | 撰寫設定檔、設定反向代理，使用 Unix socket 溝通 |
+
+---
+
+## 🛠 常見錯誤排解
+
+### ❌ `nginx: [emerg] bind() to 0.0.0.0:80 failed`：
+說明已有其他程式佔用 80 port，請使用以下方式排查：
 ```bash
-# 一鍵執行部署（無網域版）
-git clone https://github.com/maso0310/flask_vps_deploy.git && \
-cd flask_vps_deploy && \
-chmod +x Flask-vps-deploy.sh && \
-sudo ./Flask-vps-deploy.sh myapp _
+sudo lsof -i :80
+sudo systemctl stop apache2
 ```
+
+---
+
+## 📝 範例截圖（可自行加入）
+你可以在此放上幾張畫面截圖：
+- `部署後 nginx 顯示成功頁面`
+- `systemctl status myapp` 顯示 active (running)
+
+---
+
+## 📜 授權 License
+MIT License
+
+你可以自由使用、修改與商用此腳本，請保留作者資訊。
