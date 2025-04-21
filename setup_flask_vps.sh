@@ -30,11 +30,20 @@ pip install flask gunicorn
 # ========= 建立 app.py =========
 cat > app.py << EOF
 from flask import Flask
-app = Flask(__name__)
+from werkzeug.middleware.dispatcher import DispatcherMiddleware
 
-@app.route("/")
+real_app = Flask(__name__)
+
+@real_app.route("/")
 def home():
     return "Hello from Gunicorn + Flask on VPS at /$PROJECT_NAME/"
+
+app = DispatcherMiddleware(lambda environ, start_response: (
+    start_response('404 Not Found', [('Content-Type', 'text/plain')]) or [b'Not Found']),
+    {
+        "/$PROJECT_NAME": real_app
+    }
+)
 EOF
 
 # ========= 建立 systemd 服務 =========
