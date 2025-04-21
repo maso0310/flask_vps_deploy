@@ -14,7 +14,7 @@ sudo apt update && sudo apt install git -y
 # 下載腳本並賦予執行權限
 git clone https://github.com/maso0310/flask_vps_deploy.git && \
 cd flask_vps_deploy && \
-chmod +x setup_flask_vps.sh uninstall.sh
+chmod +x flask_vps_deploy/*.sh
 ```
 
 ### 2️⃣ 使用腳本部署 Flask 專案
