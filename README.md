@@ -64,13 +64,6 @@ sudo systemctl stop apache2
 
 ---
 
-## 📝 範例截圖
-- `部署後 nginx 顯示成功頁面`
-
-- `systemctl status myapp` 顯示 active (running)
-
----
-
 ## 📜 授權 License
 MIT License
 
