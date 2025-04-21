@@ -24,7 +24,7 @@ sudo apt update && sudo apt install git -y
 ```bash
 git clone https://github.com/maso0310/flask_vps_deploy.git && \
 cd flask_vps_deploy && \
-chmod +x Flask-vps-deploy.sh && \
+chmod +x Flask-vps-deploy.sh
 ```
 
 ### 無網域名稱專案建立指令
