@@ -17,7 +17,7 @@ echo "🚀 開始部署 Flask 專案 [$PROJECT_NAME] 到 VPS（網域：$DOMAIN_
 
 # ========= 安裝必要套件 =========
 apt update
-apt install python3 python3-pip python3-venv nginx lsof -y
+apt install python3 python3-pip python3-venv nginx lsof curl -y
 
 # ========= 建立虛擬環境與 Flask 專案 =========
 mkdir -p "$INSTALL_DIR"
@@ -108,3 +108,15 @@ nginx -t && systemctl restart nginx
 echo ""
 echo "✅ 專案 [$PROJECT_NAME] 部署完成！"
 echo "👉 請訪問：http://$DOMAIN_NAME/$PROJECT_NAME/"
+
+# ========= 顯示完整測試網址 =========
+echo ""
+
+if [ "$DOMAIN_NAME" == "_" ]; then
+    PUBLIC_IP=$(curl -s https://api.ipify.org)
+    echo "🌐 測試網址： http://$PUBLIC_IP/$PROJECT_NAME/"
+else
+    echo "🌐 測試網址： http://$DOMAIN_NAME/$PROJECT_NAME/"
+fi
+
+echo "🎉 請直接在瀏覽器中貼上以上網址測試！"
