@@ -1,65 +1,73 @@
 #!/bin/bash
 
 # Flask VPS 專案清除腳本（適用於 /opt 安裝路徑）
-# 用法：sudo ./uninstall.sh myproject
+# 用法：sudo ./uninstall.sh 專案名稱 [網域名稱]
+# 範例：sudo ./uninstall.sh myapp1 _
+#      sudo ./uninstall.sh myapp5 mydomain.com
 
 set -e
 
 PROJECT_NAME=${1:-myflaskapp}
+DOMAIN_NAME=${2:-_}
 PROJECT_DIR="/opt/$PROJECT_NAME"
 SERVICE_FILE="/etc/systemd/system/$PROJECT_NAME.service"
-NGINX_SITE="/etc/nginx/sites-available/$PROJECT_NAME"
-NGINX_LINK="/etc/nginx/sites-enabled/$PROJECT_NAME"
+SOCK_PATH="$PROJECT_DIR/$PROJECT_NAME.sock"
+NGINX_SITE="/etc/nginx/sites-available/flask_projects_${DOMAIN_NAME//./_}"
+NGINX_LINK="/etc/nginx/sites-enabled/$(basename $NGINX_SITE)"
 
-echo "🧹 開始移除 Flask 專案：$PROJECT_NAME"
+echo "🧹 開始移除 Flask 專案：$PROJECT_NAME (domain: $DOMAIN_NAME)"
 
-# 停止並移除 systemd 服務
+# ========== 停止並移除 systemd 服務 ==========
 if systemctl list-units --full -all | grep -q "$PROJECT_NAME.service"; then
-    echo "🛑 停止 systemd 服務..."
+    echo "🛑 停止並移除 systemd 服務..."
     systemctl stop $PROJECT_NAME
     systemctl disable $PROJECT_NAME
     rm -f $SERVICE_FILE
-    echo "✅ systemd 服務已移除"
+    echo "✅ systemd 服務已刪除"
 else
-    echo "⚠️ systemd 服務不存在，略過"
+    echo "⚠️ 找不到 systemd 服務，略過"
 fi
 
-# 移除 nginx 設定檔
-echo "🗑️ 移除 nginx 設定檔..."
-rm -f $NGINX_SITE
-rm -f $NGINX_LINK
+# ========== 從 nginx 設定中移除該 location ==========
+if [ -f "$NGINX_SITE" ]; then
+    if grep -q "location /$PROJECT_NAME/" "$NGINX_SITE"; then
+        echo "🗑️ 移除 nginx 設定中的 location /$PROJECT_NAME/"
+        sed -i "/location \\/$PROJECT_NAME\\//,/^ *}/d" "$NGINX_SITE"
+        echo "✅ 已從 nginx 設定中移除 location"
 
-# 還原 nginx 預設 default 設定檔（若不存在）
-if [ ! -f /etc/nginx/sites-available/default ]; then
-    echo "🌱 還原 nginx 預設 default 設定檔..."
-    cat > /etc/nginx/sites-available/default << 'EOF'
-server {
-    listen 80 default_server;
-    listen [::]:80 default_server;
+        # 如果刪完後，裡面已無任何 location，就刪整個檔案
+        if ! grep -q "location /" "$NGINX_SITE"; then
+            echo "📭 該 nginx 設定已無其他專案，將一併刪除"
+            rm -f "$NGINX_SITE" "$NGINX_LINK"
+        fi
 
-    server_name _;
-
-    root /var/www/html;
-
-    index index.html index.htm index.nginx-debian.html;
-
-    location / {
-        try_files \$uri \$uri/ =404;
-    }
-}
-EOF
-    ln -sf /etc/nginx/sites-available/default /etc/nginx/sites-enabled/
-    echo "✅ nginx 預設 default 設定檔已還原"
+        nginx -t && systemctl restart nginx
+    else
+        echo "⚠️ 未在 nginx 設定中找到 /$PROJECT_NAME/，略過"
+    fi
+else
+    echo "⚠️ 找不到對應的 nginx 設定檔 $NGINX_SITE，略過"
 fi
 
-# 重啟 nginx
-echo "🔄 重啟 nginx..."
-systemctl restart nginx
-echo "✅ nginx 設定已清除並重啟"
+# ========== 刪除專案資料夾 ==========
+if [ -d "$PROJECT_DIR" ]; then
+    echo "🧨 刪除專案目錄 $PROJECT_DIR"
+    rm -rf "$PROJECT_DIR"
+    echo "✅ 專案資料夾已刪除"
+else
+    echo "⚠️ 專案資料夾不存在，略過"
+fi
 
-# 刪除專案資料夾
-echo "🧨 刪除專案資料夾..."
-rm -rf $PROJECT_DIR
-echo "✅ 專案資料夾已刪除：$PROJECT_DIR"
+# ========== 如果已無任何 flask_projects 設定檔，還原 nginx default ==========
+REMAINING_FLASK_FILES=$(find /etc/nginx/sites-available/ -maxdepth 1 -type f -name 'flask_projects_*')
+
+if [ -z "$REMAINING_FLASK_FILES" ]; then
+    echo "🌱 已無任何 Flask 專案設定，還原 nginx 預設首頁..."
+    ln -sf /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
+    nginx -t && systemctl restart nginx
+    echo "✅ 已還原 nginx 預設首頁"
+else
+    echo "📂 尚有其他 Flask 專案設定，略過還原預設首頁"
+fi
 
 echo "🧼 清理完成！"
