@@ -26,10 +26,12 @@ git clone https://github.com/maso0310/flask_vps_deploy.git && \
 cd flask_vps_deploy && \
 chmod +x Flask-vps-deploy.sh && \
 
-# 有網域名稱指令
+### 有網域名稱專案建立指令
+```
 sudo ./Flask-vps-deploy.sh myapp yourdomain.com
-
-# 無網域名稱指令
+```
+### 無網域名稱專案建立指令
+```
 sudo ./Flask-vps-deploy.sh myapp _
 ```
 
