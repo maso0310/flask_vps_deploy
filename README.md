@@ -24,9 +24,19 @@ sudo apt update && sudo apt install git -y
 ```bash
 git clone https://github.com/maso0310/flask_vps_deploy.git && \
 cd flask_vps_deploy && \
-chmod +x setup_flask_vps.sh chmod +x uninstall.sh && \
-sudo ./Flask-vps-deploy.sh myapp yourdomain.com
+chmod +x setup_flask_vps.sh && chmod +x uninstall.sh
 ```
+
+### 無網域的專案建立指令
+```
+sudo ./setup_flask_vps.sh myapp _
+```
+
+### 有網域的專案建立指令
+```
+sudo ./setup_flask_vps.sh myapp yourdomain.com
+```
+
 
 - `myapp`：你要建立的 Flask 專案名稱
 - `yourdomain.com`：你的網域名稱（如果沒有請輸入 `_` 代表預設通配）
