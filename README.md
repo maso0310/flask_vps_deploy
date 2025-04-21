@@ -1,4 +1,4 @@
-# flask\_vps\_deploy：一鍵部署 Flask + Gunicorn + systemd + nginx
+輕鬆部署 Flask + Gunicorn + systemd + nginx
 
 這是一個適用於 Ubuntu VPS 的快速部署腳本，能將 Flask 專案透過 Gunicorn 啟動，並用 nginx 作為反向代理。支援多個專案分流，透過路徑分配與多網域共用。
 
