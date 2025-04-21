@@ -107,8 +107,6 @@ nginx -t && systemctl restart nginx
 # ========= 結尾 =========
 echo ""
 echo "✅ 專案 [$PROJECT_NAME] 部署完成！"
-echo "👉 請訪問：http://$DOMAIN_NAME/$PROJECT_NAME/"
-
 # ========= 顯示完整測試網址 =========
 echo ""
 
