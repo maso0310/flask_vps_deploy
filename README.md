@@ -20,7 +20,7 @@
 sudo apt update && sudo apt install git -y
 ```
 
-### 2️⃣ 克隆專案並執行部署腳本
+### 2️⃣ 下載專案並執行部署腳本
 ```bash
 git clone https://github.com/maso0310/flask_vps_deploy.git && \
 cd flask_vps_deploy && \
@@ -64,9 +64,9 @@ sudo systemctl stop apache2
 
 ---
 
-## 📝 範例截圖（可自行加入）
-你可以在此放上幾張畫面截圖：
+## 📝 範例截圖
 - `部署後 nginx 顯示成功頁面`
+
 - `systemctl status myapp` 顯示 active (running)
 
 ---
