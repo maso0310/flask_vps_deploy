@@ -2,7 +2,7 @@
 
 # 使用 sudo 執行整個腳本
 if [[ $EUID -ne 0 ]]; then
-   echo "請用 sudo 執行這個腳本：sudo bash setup_flask_vps.sh"
+   echo "請用 sudo 權限執行這個腳本，例如：sudo bash setup_flask_vps.sh"
    exit 1
 fi
 
@@ -51,19 +51,27 @@ Group=www-data
 WorkingDirectory=$INSTALL_DIR
 Environment="PATH=$INSTALL_DIR/venv/bin"
 ExecStart=$INSTALL_DIR/venv/bin/gunicorn --workers 3 --bind unix:$SOCK_PATH app:app
-ExecStartPost=/bin/chown root:www-data $SOCK_PATH
-ExecStartPost=/bin/chmod 766 $SOCK_PATH
 
 [Install]
 WantedBy=multi-user.target
 EOF
 
-# 啟動 systemd 服務
+# 啟動 systemd 並等待建立 .sock
 systemctl daemon-reexec
 systemctl start $SERVICE_NAME
-systemctl enable $SERVICE_NAME
+sleep 1  # 稍等 socket 建立完成
 
-# 移除 nginx 預設首頁（避免干擾）
+# 修正 .sock 權限給 nginx 使用
+if [ -S "$SOCK_PATH" ]; then
+    chown root:www-data "$SOCK_PATH"
+    chmod 766 "$SOCK_PATH"
+    echo "✅ .sock 權限已設定完成"
+else
+    echo "❌ 錯誤：.sock 檔案未建立，請使用 'journalctl -u $SERVICE_NAME' 檢查 Gunicorn 啟動錯誤"
+    exit 1
+fi
+
+# 移除 nginx 預設首頁
 rm -f /etc/nginx/sites-enabled/default
 
 # 建立 nginx 設定檔
@@ -84,5 +92,5 @@ ln -sf /etc/nginx/sites-available/$PROJECT_NAME /etc/nginx/sites-enabled/
 nginx -t && systemctl restart nginx
 
 echo ""
-echo "✅ 部署完成！請在瀏覽器輸入你的 VPS IP 查看成果："
+echo "✅ 部署完成！請打開瀏覽器輸入你的 VPS IP 查看成果："
 echo "👉 預期畫面應顯示：Hello from Gunicorn + Flask on VPS!"
