@@ -63,6 +63,9 @@ REMAINING_FLASK_FILES=$(find /etc/nginx/sites-available/ -maxdepth 1 -type f -na
 
 if [ -z "$REMAINING_FLASK_FILES" ]; then
     echo "🌱 已無任何 Flask 專案設定，還原 nginx 預設首頁..."
+
+    # 移除其他重複的 server_name _ 設定（避免 nginx 警告）
+    find /etc/nginx/sites-enabled/ -type l -exec grep -l "server_name _;" {} \; | xargs rm -f   
     ln -sf /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
     nginx -t && systemctl restart nginx
     echo "✅ 已還原 nginx 預設首頁"
