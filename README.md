@@ -16,7 +16,7 @@ sudo apt update && sudo apt install git -y
 ```bash
 git clone https://github.com/maso0310/flask_vps_deploy.git && \
 cd flask_vps_deploy && \
-chmod +x *.sh
+chmod +x ./*.sh
 ```
 
 ## 2️⃣ 使用腳本部署 Flask 專案
@@ -24,12 +24,12 @@ chmod +x *.sh
 ### 無網域設定部署
 
 ```bash
-sudo setup_flask_vps.sh myapp1 _
+sudo ./setup_flask_vps.sh myapp1 _
 ```
 
 ### 若需要部署另一個 flask 專案，可使用其他專案名稱重新建立
 ```bash
-sudo setup_flask_vps.sh myapp2 _
+sudo ./setup_flask_vps.sh myapp2 _
 ```
 
 📝 此處 `myapp1` 與 `myapp2` 皆為可自定義專案資料夾名稱，也是日後透過 `http://your-vps-ip/myapp1/` 或者 `http://your-vps-ip/myapp2/` 作為讀取的URL路徑。
@@ -37,12 +37,12 @@ sudo setup_flask_vps.sh myapp2 _
 
 ### 建立一個有網域的專案
 ```bash
-sudo setup_flask_vps.sh myapp3 mydomain.com
+sudo ./setup_flask_vps.sh myapp3 mydomain.com
 ```
 
 ### 你也可以重複在同一個網域下新增更多子路徑專案
 ```bash
-sudo setup_flask_vps.sh myapp4 mydomain.com
+sudo ./setup_flask_vps.sh myapp4 mydomain.com
 ```
 
 📝 此處 `myapp3` 與 `myapp4` 皆為可自定義專案資料夾名稱，與無網域名稱建立之專案差別為使用網域 `http://mydomain.com/myapp3/` 或者 `http://mydomain.com/myapp4/` 作為讀取的URL路徑。
@@ -53,12 +53,12 @@ sudo setup_flask_vps.sh myapp4 mydomain.com
 
 ```bash
 ### 基本用法
-sudo uninstall.sh myapp1 _
+sudo ./uninstall.sh myapp1 _
 ```
 
 ### 如果是有自訂網域的話
 ```bash
-sudo uninstall.sh myapp3 mydomain.com
+sudo ./uninstall.sh myapp3 mydomain.com
 ```
 
 此指令會完成以下工作：
